@@ -13,10 +13,12 @@ public class Account {
     @Column(name = "id", nullable = false)
     private long id;
 
-    @Column(name = "balance")
+    @Column(name = "balance", nullable = false)
     private BigDecimal balance;
+
     @Column(name = "last_update", nullable = false)
     private LocalDateTime lastUpdate;
+
     @Column(name = "is_customer", nullable = false)
     private boolean customer;
 

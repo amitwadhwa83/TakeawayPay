@@ -38,15 +38,15 @@ public class TransferServiceImpl implements TransferService {
 
     @Override
     @Transactional(rollbackFor = GenericException.class)
-    public long tranferToRestaurant(Transfer transfer)
+    public long doTranfer(Transfer transfer)
             throws InsufficientFundsException, InvalidAmountException, InvalidAccountException, DailyLimitExceededException {
 
-        Account fromAccount = validateAndGetAccount(CUSTOMER, transfer.getSourceAccount());
-        Account toAccount = validateAndGetAccount(BUSINESS, transfer.getDestAccount());
+        Account customerAccount = validateAndGetAccount(CUSTOMER, transfer.getSourceAccount());
+        Account restaurantAccount = validateAndGetAccount(BUSINESS, transfer.getDestAccount());
         BigDecimal transferAmount = transfer.getAmount();
         validateAmount(transferAmount);
         validateDailyLimitForCustomerAccount(transfer.getSourceAccount(), transferAmount);
-        return tranferMoney(fromAccount, toAccount, transferAmount);
+        return tranferMoney(customerAccount, restaurantAccount, transferAmount);
     }
 
     private void validateAmount(BigDecimal amount) throws InvalidAmountException {

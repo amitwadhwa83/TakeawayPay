@@ -11,7 +11,6 @@ import com.takeaway.pay.service.TransferService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -35,8 +34,8 @@ public class TransferController {
     }
 
     @PostMapping(value = "/transfer/create")
-    public long tranferToRestaurant(@RequestBody Transfer transfer) throws InsufficientFundsException,
+    public long doTranfer(@RequestBody Transfer transfer) throws InsufficientFundsException,
             InvalidAmountException, InvalidAccountException, DailyLimitExceededException {
-        return transferService.tranferToRestaurant(transfer);
+        return transferService.doTranfer(transfer);
     }
 }

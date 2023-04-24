@@ -26,7 +26,7 @@ public class Transfer {
     @Column(name = "amount", nullable = false)
     private BigDecimal amount;
 
-    @Column(name = "last_update")
+    @Column(name = "last_update", nullable = false)
     private LocalDateTime lastUpdate;
 
     public Transfer() {

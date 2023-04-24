@@ -9,9 +9,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface TransferRepository extends JpaRepository<Transfer, Long> {
-    List<Transfer> findBySourceAccount(String sourceAccount);
-    //List<Transfer> findBySourceAccountAndLastUpdate (String sourceAccount, LocalDate localDate);
-
     @Query(value = "SELECT t.* FROM transfer t WHERE source_account =:sourceAccount and CAST(last_update AS DATE) =:date", nativeQuery = true)
     List<Transfer> findByDate(long sourceAccount, LocalDate date);
 }
