@@ -8,6 +8,7 @@ import com.takeaway.pay.exception.InvalidAccountException;
 import com.takeaway.pay.exception.InvalidAmountException;
 import com.takeaway.pay.service.AccountService;
 import com.takeaway.pay.service.TransferService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,7 +35,7 @@ public class TransferController {
     }
 
     @PostMapping(value = "/transfer/create")
-    public long doTranfer(@RequestBody Transfer transfer) throws InsufficientFundsException,
+    public long doTranfer(@Valid @RequestBody Transfer transfer) throws InsufficientFundsException,
             InvalidAmountException, InvalidAccountException, DailyLimitExceededException {
         return transferService.doTranfer(transfer);
     }

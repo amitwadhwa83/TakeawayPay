@@ -2,6 +2,7 @@ package com.takeaway.pay.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -18,15 +19,18 @@ public class Transfer {
     private long id;
 
     @Column(name = "source_account", nullable = false)
+    @NotNull
     private long sourceAccount;
 
     @Column(name = "dest_account", nullable = false)
+    @NotNull
     private long destAccount;
 
     @Column(name = "amount", nullable = false)
+    @NotNull
     private BigDecimal amount;
 
-    @Column(name = "last_update", nullable = false)
+    @Column(name = "last_update")
     private LocalDateTime lastUpdate;
 
     public Transfer() {
