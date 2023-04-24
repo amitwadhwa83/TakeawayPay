@@ -65,8 +65,13 @@ With the Web server started and running, perform the following requests to consu
 
 **Example request:**
 
-```string
-http://localhost:8080/transfer/create?customerAccount=1&restaurantAccount=2&amount=4
+```json
+{
+  "sourceAccount": 1,
+  "destAccount": 2,
+  "amount": 4,
+  "lastUpdate": "2023-04-24T18:54:35.487Z"
+}
 ```
 **Example response:**
 

@@ -12,6 +12,6 @@ import java.util.List;
 public interface TransferService {
     List<Transfer> listTransfer();
 
-    long tranferToRestaurant(long customerAccount, long restaurantAccount, BigDecimal amount) throws InsufficientFundsException,
+    long tranferToRestaurant(Transfer transfer) throws InsufficientFundsException,
             InvalidAmountException, InvalidAccountException, DailyLimitExceededException;
 }

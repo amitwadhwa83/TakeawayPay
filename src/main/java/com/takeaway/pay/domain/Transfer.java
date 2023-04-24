@@ -1,9 +1,7 @@
 package com.takeaway.pay.domain;
 
-import jakarta.persistence.Table;
-
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Digits;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -16,10 +14,12 @@ public class Transfer {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "id", nullable = false)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private long id;
 
     @Column(name = "source_account", nullable = false)
     private long sourceAccount;
+
     @Column(name = "dest_account", nullable = false)
     private long destAccount;
 
@@ -36,7 +36,7 @@ public class Transfer {
         this.sourceAccount = sourceAccount;
         this.destAccount = destAccount;
         this.amount = amount;
-        lastUpdate=LocalDateTime.now();
+        lastUpdate = LocalDateTime.now();
     }
 
     public long getId() {
