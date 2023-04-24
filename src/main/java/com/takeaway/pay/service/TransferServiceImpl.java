@@ -7,6 +7,7 @@ import com.takeaway.pay.exception.InsufficientFundsException;
 import com.takeaway.pay.exception.InvalidAccountException;
 import com.takeaway.pay.exception.InvalidAmountException;
 import com.takeaway.pay.repository.TransferRepository;
+import com.takeaway.pay.util.AccountType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import static com.takeaway.pay.util.AccountType.BUSINESS;
+import static com.takeaway.pay.util.AccountType.CUSTOMER;
+
 @Service
 public class TransferServiceImpl implements TransferService {
 
@@ -22,7 +26,7 @@ public class TransferServiceImpl implements TransferService {
     @Autowired
     private final AccountService accountService;
 
-    private static final BigDecimal DAILY_LIMIT = new BigDecimal(10);
+    private static final BigDecimal DAILY_LIMIT_IN_EUR = new BigDecimal(10);
 
     public TransferServiceImpl(TransferRepository transferRepository, AccountService accountService) {
         this.transferRepository = transferRepository;
@@ -39,54 +43,53 @@ public class TransferServiceImpl implements TransferService {
             throws InsufficientFundsException, InvalidAmountException, InvalidAccountException, DailyLimitExceededException {
         validateAmount(amount);
         validateDailyLimitForCustomerAccount(customerAccount, amount);
-        Account fromAccount = validateAndGetCustomerAccount(customerAccount);
-        Account toAccount = validateAndGetRestaurantAccount(restaurantAccount);
+        Account fromAccount = validateAndGetAccount(CUSTOMER, customerAccount);
+        Account toAccount = validateAndGetAccount(BUSINESS, restaurantAccount);
         return tranferMoney(fromAccount, toAccount, amount);
     }
 
-    private void validateAmount(BigDecimal amount) throws InvalidAmountException, DailyLimitExceededException {
+    private void validateAmount(BigDecimal amount) throws InvalidAmountException {
         if (null == amount || amount.signum() == -1) {
             throw new InvalidAmountException(amount);
         }
-        if (amount.compareTo(DAILY_LIMIT) > 0) {
-            throw new DailyLimitExceededException("Amount is greater than daily limit of :" + DAILY_LIMIT);
-        }
     }
 
-    private void validateDailyLimitForCustomerAccount(long customerAccount, BigDecimal amount) throws DailyLimitExceededException {
-        List<Transfer> transfersForToday = transferRepository.findByDate(customerAccount, LocalDate.now());
+    private void validateDailyLimitForCustomerAccount(long account, BigDecimal debitAmount) throws DailyLimitExceededException {
+        if (debitAmount.compareTo(DAILY_LIMIT_IN_EUR) > 0) {
+            throw new DailyLimitExceededException("Amount is greater than daily limit of :" + DAILY_LIMIT_IN_EUR);
+        }
+        List<Transfer> transfersForToday = transferRepository.findByDate(account, LocalDate.now());
         if (!transfersForToday.isEmpty()) {
             BigDecimal totalTransfersForToday = transfersForToday.stream()
                     .map(transfer -> transfer.getAmount())
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-            boolean dailyLimitExhausted = DAILY_LIMIT.compareTo(totalTransfersForToday) <= 0;
-            if (dailyLimitExhausted)
-                throw new DailyLimitExceededException(customerAccount, "0");
+            if (dailyLimitExhausted(totalTransfersForToday))
+                throw new DailyLimitExceededException(account, "0");
 
-            boolean dailyLimitWillBeExhausted = DAILY_LIMIT.subtract(amount).compareTo(totalTransfersForToday) < 0;
-            if (dailyLimitWillBeExhausted)
-                throw new DailyLimitExceededException(customerAccount, amount.toString());
+            if (dailyLimitWillBeExhausted(totalTransfersForToday, debitAmount))
+                throw new DailyLimitExceededException(account, debitAmount.toString());
         }
     }
 
-    private Account validateAndGetCustomerAccount(long customerAccount) throws InvalidAccountException {
-        Optional<Account> account = accountService.findById(customerAccount);
-        if (!account.isPresent() || !account.get().isCustomer()) {
-            throw new InvalidAccountException("Customer account not found or invalid:" + customerAccount);
-        }
-        return account.get();
+    private boolean dailyLimitExhausted(BigDecimal totalTransfersForToday) {
+        return DAILY_LIMIT_IN_EUR.compareTo(totalTransfersForToday) <= 0;
     }
 
-    private Account validateAndGetRestaurantAccount(long restaurantAccount) throws InvalidAccountException {
-        Optional<Account> account = accountService.findById(restaurantAccount);
-        if (!account.isPresent() || account.get().isCustomer()) {
-            throw new InvalidAccountException("Restaurant account not found or invalid:" + restaurantAccount);
-        }
-        return account.get();
+    private boolean dailyLimitWillBeExhausted(BigDecimal totalTransfersForToday, BigDecimal debitAmount) {
+        return DAILY_LIMIT_IN_EUR.subtract(debitAmount).compareTo(totalTransfersForToday) < 0;
     }
 
-    private static final Object lock = new Object();
+
+    private Account validateAndGetAccount(AccountType accountType, long account) throws InvalidAccountException {
+        Optional<Account> accnt = accountService.findById(account);
+        if (!accnt.isPresent() ||
+                (accountType.equals(CUSTOMER) && !accnt.get().isCustomer()) ||
+                (accountType.equals(BUSINESS) && accnt.get().isCustomer())) {
+            throw new InvalidAccountException("Account not found or invalid:" + account);
+        }
+        return accnt.get();
+    }
 
     private long tranferMoney(Account fromAccount, Account toAccount, BigDecimal amount) throws InsufficientFundsException {
         class Helper {

@@ -31,21 +31,29 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public void creditRestaurantAccount(long accountId, BigDecimal amount) {
-        Account account = accountRepository.getReferenceById(accountId);
-        account.setBalance(account.getBalance().add(amount));
-        account.setLastUpdate(LocalDateTime.now());
-        accountRepository.save(account);
+        Optional<Account> account = accountRepository.findById(accountId);
+        account.ifPresent(acct -> {
+            acct.setBalance(acct.getBalance().add(amount));
+            acct.setLastUpdate(LocalDateTime.now());
+            accountRepository.save(acct);
+        });
     }
 
     @Override
     public void debitCustomerAccount(long accountId, BigDecimal amount) throws InsufficientFundsException {
-        Account account = accountRepository.getReferenceById(accountId);
-        if (account.getBalance().compareTo(amount) >= 0) {
-            account.setBalance(account.getBalance().subtract(amount));
-            account.setLastUpdate(LocalDateTime.now());
-            accountRepository.save(account);
-        } else {
-            throw new InsufficientFundsException(accountId);
-        }
+        Optional<Account> account = accountRepository.findById(accountId);
+        account.ifPresent(acct -> {
+            if (acct.getBalance().compareTo(amount) >= 0) {
+                acct.setBalance(acct.getBalance().subtract(amount));
+                acct.setLastUpdate(LocalDateTime.now());
+                accountRepository.save(acct);
+            } else {
+                try {
+                    throw new InsufficientFundsException(accountId);
+                } catch (InsufficientFundsException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
     }
 }
