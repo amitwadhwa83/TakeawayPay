@@ -34,10 +34,10 @@ public class TransferController {
         return accountService.listAccount();
     }
 
-    @PostMapping(value = "/transfer/create/{customerAccount}/{restaurantAccount}/{amount}")
-    public long tranferToRestaurant(@PathVariable("customerAccount") long customerAccount,
-                                    @PathVariable("restaurantAccount") long restaurantAccount,
-                                    @PathVariable("amount") BigDecimal amount) throws InsufficientFundsException,
+    @PostMapping(value = "/transfer/create")
+    public long tranferToRestaurant(@RequestParam("customerAccount") long customerAccount,
+                                    @RequestParam("restaurantAccount") long restaurantAccount,
+                                    @RequestParam("amount") BigDecimal amount) throws InsufficientFundsException,
             InvalidAmountException, InvalidAccountException, DailyLimitExceededException {
         return transferService.tranferToRestaurant(customerAccount, restaurantAccount, amount);
     }

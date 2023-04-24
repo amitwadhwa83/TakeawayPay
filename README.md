@@ -59,10 +59,15 @@ With the Web server started and running, perform the following requests to consu
 
 **Example request:**
 
-- **POST** (/transfer/create/{customerAccount}/{restaurantAccount}/{amount})
+- **POST** (/transfer/create)
 - **Accept:** application/json
 - **Content-Type:** application/json
 
+**Example request:**
+
+```string
+http://localhost:8080/transfer/create?customerAccount=1&restaurantAccount=2&amount=4
+```
 **Example response:**
 
 ```string

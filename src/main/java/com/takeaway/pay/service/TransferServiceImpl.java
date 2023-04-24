@@ -2,14 +2,12 @@ package com.takeaway.pay.service;
 
 import com.takeaway.pay.domain.Account;
 import com.takeaway.pay.domain.Transfer;
-import com.takeaway.pay.exception.DailyLimitExceededException;
-import com.takeaway.pay.exception.InsufficientFundsException;
-import com.takeaway.pay.exception.InvalidAccountException;
-import com.takeaway.pay.exception.InvalidAmountException;
+import com.takeaway.pay.exception.*;
 import com.takeaway.pay.repository.TransferRepository;
 import com.takeaway.pay.util.AccountType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -39,6 +37,7 @@ public class TransferServiceImpl implements TransferService {
     }
 
     @Override
+    @Transactional(rollbackFor = GenericException.class)
     public long tranferToRestaurant(long customerAccount, long restaurantAccount, BigDecimal amount)
             throws InsufficientFundsException, InvalidAmountException, InvalidAccountException, DailyLimitExceededException {
         validateAmount(amount);
@@ -91,6 +90,8 @@ public class TransferServiceImpl implements TransferService {
         return accnt.get();
     }
 
+    private static final Object lock = new Object();
+
     private long tranferMoney(Account fromAccount, Account toAccount, BigDecimal amount) throws InsufficientFundsException {
         class Helper {
             public long transfer() throws InsufficientFundsException {
@@ -100,9 +101,27 @@ public class TransferServiceImpl implements TransferService {
                         .getId();
             }
         }
-        synchronized (fromAccount) {
+        int fromHash = System.identityHashCode(fromAccount);
+        int toHash = System.identityHashCode(toAccount);
+        if (fromHash < toHash) {
+            synchronized (fromAccount) {
+                synchronized (toAccount) {
+                    return new Helper().transfer();
+                }
+            }
+        } else if (fromHash > toHash) {
             synchronized (toAccount) {
-                return new Helper().transfer();
+                synchronized (fromAccount) {
+                    return new Helper().transfer();
+                }
+            }
+        } else {
+            synchronized (lock) {
+                synchronized (fromAccount) {
+                    synchronized (toAccount) {
+                        return new Helper().transfer();
+                    }
+                }
             }
         }
     }
