@@ -4,7 +4,6 @@ import com.takeaway.pay.domain.Account;
 import com.takeaway.pay.domain.Transfer;
 import com.takeaway.pay.exception.*;
 import com.takeaway.pay.repository.TransferRepository;
-import com.takeaway.pay.util.AccountType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import static com.takeaway.pay.util.AccountType.BUSINESS;
 import static com.takeaway.pay.util.AccountType.CUSTOMER;
@@ -39,9 +37,8 @@ public class TransferServiceImpl implements TransferService {
     @Override
     public long doTranfer(Transfer transfer)
             throws InsufficientFundsException, InvalidAmountException, InvalidAccountException, DailyLimitExceededException {
-
-        Account customerAccount = validateAndGetAccount(CUSTOMER, transfer.getSourceAccount());
-        Account restaurantAccount = validateAndGetAccount(BUSINESS, transfer.getDestAccount());
+        Account customerAccount = accountService.validateAndGetAccount(CUSTOMER, transfer.getSourceAccount());
+        Account restaurantAccount = accountService.validateAndGetAccount(BUSINESS, transfer.getDestAccount());
         BigDecimal transferAmount = transfer.getAmount();
         validateAmount(transferAmount);
         validateDailyLimitForCustomerAccount(transfer.getSourceAccount(), transferAmount);
@@ -68,7 +65,7 @@ public class TransferServiceImpl implements TransferService {
                 throw new DailyLimitExceededException(account, "0");
 
             if (dailyLimitWillBeExhausted(totalTransfersForToday, debitAmount))
-                throw new DailyLimitExceededException(account, debitAmount.toString());
+                throw new DailyLimitExceededException(account, DAILY_LIMIT_IN_EUR.subtract(totalTransfersForToday).toString());
         }
     }
 
@@ -80,51 +77,10 @@ public class TransferServiceImpl implements TransferService {
         return DAILY_LIMIT_IN_EUR.subtract(debitAmount).compareTo(totalTransfersForToday) < 0;
     }
 
-
-    private Account validateAndGetAccount(AccountType accountType, long account) throws InvalidAccountException {
-        Optional<Account> accnt = accountService.findById(account);
-        if (!accnt.isPresent() ||
-                (accountType.equals(CUSTOMER) && !accnt.get().isCustomer()) ||
-                (accountType.equals(BUSINESS) && accnt.get().isCustomer())) {
-            throw new InvalidAccountException("Account not found or invalid:" + account);
-        }
-        return accnt.get();
-    }
-
-    private static final Object lock = new Object();
-
     @Transactional(rollbackFor = GenericException.class)
-    private long tranferMoney(Account fromAccount, Account toAccount, BigDecimal amount) throws InsufficientFundsException {
-        class Helper {
-            public long transfer() throws InsufficientFundsException {
-                accountService.debitCustomerAccount(fromAccount.getId(), amount);
-                accountService.creditRestaurantAccount(toAccount.getId(), amount);
-                return transferRepository.save(new Transfer(fromAccount.getId(), toAccount.getId(), amount))
-                        .getId();
-            }
-        }
-        int fromHash = System.identityHashCode(fromAccount);
-        int toHash = System.identityHashCode(toAccount);
-        if (fromHash < toHash) {
-            synchronized (fromAccount) {
-                synchronized (toAccount) {
-                    return new Helper().transfer();
-                }
-            }
-        } else if (fromHash > toHash) {
-            synchronized (toAccount) {
-                synchronized (fromAccount) {
-                    return new Helper().transfer();
-                }
-            }
-        } else {
-            synchronized (lock) {
-                synchronized (fromAccount) {
-                    synchronized (toAccount) {
-                        return new Helper().transfer();
-                    }
-                }
-            }
-        }
+    public long tranferMoney(Account fromAccount, Account toAccount, BigDecimal amount) throws InsufficientFundsException {
+        accountService.doTransfer(fromAccount, toAccount, amount);
+        return transferRepository.save(new Transfer(fromAccount.getId(), toAccount.getId(), amount))
+                .getId();
     }
 }

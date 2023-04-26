@@ -2,13 +2,18 @@ package com.takeaway.pay.service;
 
 import com.takeaway.pay.domain.Account;
 import com.takeaway.pay.exception.InsufficientFundsException;
+import com.takeaway.pay.exception.InvalidAccountException;
 import com.takeaway.pay.repository.AccountRepository;
+import com.takeaway.pay.util.AccountType;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+
+import static com.takeaway.pay.util.AccountType.BUSINESS;
+import static com.takeaway.pay.util.AccountType.CUSTOMER;
 
 @Service
 public class AccountServiceImpl implements AccountService {
@@ -29,8 +34,7 @@ public class AccountServiceImpl implements AccountService {
         return accountRepository.findById(accountId);
     }
 
-    @Override
-    public void creditRestaurantAccount(long accountId, BigDecimal amount) {
+    private void creditRestaurantAccount(long accountId, BigDecimal amount) {
         Optional<Account> account = accountRepository.findById(accountId);
         account.ifPresent(acct -> {
             acct.setBalance(acct.getBalance().add(amount));
@@ -39,8 +43,7 @@ public class AccountServiceImpl implements AccountService {
         });
     }
 
-    @Override
-    public void debitCustomerAccount(long accountId, BigDecimal amount) throws InsufficientFundsException {
+    private void debitCustomerAccount(long accountId, BigDecimal amount) throws InsufficientFundsException {
         Optional<Account> account = accountRepository.findById(accountId);
         account.ifPresent(acct -> {
             if (acct.getBalance().compareTo(amount) >= 0) {
@@ -55,5 +58,51 @@ public class AccountServiceImpl implements AccountService {
                 }
             }
         });
+    }
+
+    private static final Object lock = new Object();
+
+    @Override
+    public void doTransfer(Account fromAccount, Account toAccount, BigDecimal amount) throws InsufficientFundsException {
+        class Helper {
+            public void transfer() throws InsufficientFundsException {
+                debitCustomerAccount(fromAccount.getId(), amount);
+                creditRestaurantAccount(toAccount.getId(), amount);
+            }
+        }
+        int fromHash = System.identityHashCode(fromAccount);
+        int toHash = System.identityHashCode(toAccount);
+        if (fromHash < toHash) {
+            synchronized (fromAccount) {
+                synchronized (toAccount) {
+                    new Helper().transfer();
+                }
+            }
+        } else if (fromHash > toHash) {
+            synchronized (toAccount) {
+                synchronized (fromAccount) {
+                    new Helper().transfer();
+                }
+            }
+        } else {
+            synchronized (lock) {
+                synchronized (fromAccount) {
+                    synchronized (toAccount) {
+                        new Helper().transfer();
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public Account validateAndGetAccount(AccountType accountType, long account) throws InvalidAccountException {
+        Optional<Account> accnt = accountRepository.findById(account);
+        if (!accnt.isPresent() ||
+                (accountType.equals(CUSTOMER) && !accnt.get().isCustomer()) ||
+                (accountType.equals(BUSINESS) && accnt.get().isCustomer())) {
+            throw new InvalidAccountException("Account not found or invalid:" + account);
+        }
+        return accnt.get();
     }
 }
