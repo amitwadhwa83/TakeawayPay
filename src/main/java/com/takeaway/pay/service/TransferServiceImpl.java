@@ -37,7 +37,6 @@ public class TransferServiceImpl implements TransferService {
     }
 
     @Override
-    @Transactional(rollbackFor = GenericException.class)
     public long doTranfer(Transfer transfer)
             throws InsufficientFundsException, InvalidAmountException, InvalidAccountException, DailyLimitExceededException {
 
@@ -94,6 +93,7 @@ public class TransferServiceImpl implements TransferService {
 
     private static final Object lock = new Object();
 
+    @Transactional(rollbackFor = GenericException.class)
     private long tranferMoney(Account fromAccount, Account toAccount, BigDecimal amount) throws InsufficientFundsException {
         class Helper {
             public long transfer() throws InsufficientFundsException {
