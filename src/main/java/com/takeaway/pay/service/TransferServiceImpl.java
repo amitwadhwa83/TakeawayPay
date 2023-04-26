@@ -2,11 +2,13 @@ package com.takeaway.pay.service;
 
 import com.takeaway.pay.domain.Account;
 import com.takeaway.pay.domain.Transfer;
-import com.takeaway.pay.exception.*;
+import com.takeaway.pay.exception.DailyLimitExceededException;
+import com.takeaway.pay.exception.InsufficientFundsException;
+import com.takeaway.pay.exception.InvalidAccountException;
+import com.takeaway.pay.exception.InvalidAmountException;
 import com.takeaway.pay.repository.TransferRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -77,7 +79,6 @@ public class TransferServiceImpl implements TransferService {
         return DAILY_LIMIT_IN_EUR.subtract(debitAmount).compareTo(totalTransfersForToday) < 0;
     }
 
-    @Transactional(rollbackFor = GenericException.class)
     public long tranferMoney(Account fromAccount, Account toAccount, BigDecimal amount) throws InsufficientFundsException {
         accountService.doTransfer(fromAccount, toAccount, amount);
         return transferRepository.save(new Transfer(fromAccount.getId(), toAccount.getId(), amount))

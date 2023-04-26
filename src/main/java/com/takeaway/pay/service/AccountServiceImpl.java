@@ -1,11 +1,13 @@
 package com.takeaway.pay.service;
 
 import com.takeaway.pay.domain.Account;
+import com.takeaway.pay.exception.GenericException;
 import com.takeaway.pay.exception.InsufficientFundsException;
 import com.takeaway.pay.exception.InvalidAccountException;
 import com.takeaway.pay.repository.AccountRepository;
 import com.takeaway.pay.util.AccountType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -63,6 +65,7 @@ public class AccountServiceImpl implements AccountService {
     private static final Object lock = new Object();
 
     @Override
+    @Transactional(rollbackFor = GenericException.class)
     public void doTransfer(Account fromAccount, Account toAccount, BigDecimal amount) throws InsufficientFundsException {
         class Helper {
             public void transfer() throws InsufficientFundsException {
