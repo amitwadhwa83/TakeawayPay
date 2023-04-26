@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-import static com.takeaway.pay.util.AccountType.BUSINESS;
+import static com.takeaway.pay.util.AccountType.RESTAURANT;
 import static com.takeaway.pay.util.AccountType.CUSTOMER;
 
 @Service
@@ -40,7 +40,7 @@ public class TransferServiceImpl implements TransferService {
     public long doTranfer(Transfer transfer)
             throws InsufficientFundsException, InvalidAmountException, InvalidAccountException, DailyLimitExceededException {
         Account customerAccount = accountService.validateAndGetAccount(CUSTOMER, transfer.getSourceAccount());
-        Account restaurantAccount = accountService.validateAndGetAccount(BUSINESS, transfer.getDestAccount());
+        Account restaurantAccount = accountService.validateAndGetAccount(RESTAURANT, transfer.getDestAccount());
         BigDecimal transferAmount = transfer.getAmount();
         validateAmount(transferAmount);
         validateDailyLimitForCustomerAccount(transfer.getSourceAccount(), transferAmount);
@@ -79,7 +79,7 @@ public class TransferServiceImpl implements TransferService {
         return DAILY_LIMIT_IN_EUR.subtract(debitAmount).compareTo(totalTransfersForToday) < 0;
     }
 
-    public long tranferMoney(Account fromAccount, Account toAccount, BigDecimal amount) throws InsufficientFundsException {
+    private long tranferMoney(Account fromAccount, Account toAccount, BigDecimal amount) throws InsufficientFundsException {
         accountService.doTransfer(fromAccount, toAccount, amount);
         return transferRepository.save(new Transfer(fromAccount.getId(), toAccount.getId(), amount))
                 .getId();

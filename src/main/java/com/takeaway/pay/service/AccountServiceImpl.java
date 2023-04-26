@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static com.takeaway.pay.util.AccountType.BUSINESS;
+import static com.takeaway.pay.util.AccountType.RESTAURANT;
 import static com.takeaway.pay.util.AccountType.CUSTOMER;
 
 @Service
@@ -36,7 +36,7 @@ public class AccountServiceImpl implements AccountService {
         return accountRepository.findById(accountId);
     }
 
-    private void creditRestaurantAccount(long accountId, BigDecimal amount) {
+    private void creditAccount(long accountId, BigDecimal amount) {
         Optional<Account> account = accountRepository.findById(accountId);
         account.ifPresent(acct -> {
             acct.setBalance(acct.getBalance().add(amount));
@@ -45,7 +45,7 @@ public class AccountServiceImpl implements AccountService {
         });
     }
 
-    private void debitCustomerAccount(long accountId, BigDecimal amount) throws InsufficientFundsException {
+    private void debitAccount(long accountId, BigDecimal amount) throws InsufficientFundsException {
         Optional<Account> account = accountRepository.findById(accountId);
         account.ifPresent(acct -> {
             if (acct.getBalance().compareTo(amount) >= 0) {
@@ -69,8 +69,8 @@ public class AccountServiceImpl implements AccountService {
     public void doTransfer(Account fromAccount, Account toAccount, BigDecimal amount) throws InsufficientFundsException {
         class Helper {
             public void transfer() throws InsufficientFundsException {
-                debitCustomerAccount(fromAccount.getId(), amount);
-                creditRestaurantAccount(toAccount.getId(), amount);
+                debitAccount(fromAccount.getId(), amount);
+                creditAccount(toAccount.getId(), amount);
             }
         }
         int fromHash = System.identityHashCode(fromAccount);
@@ -103,7 +103,7 @@ public class AccountServiceImpl implements AccountService {
         Optional<Account> accnt = accountRepository.findById(account);
         if (!accnt.isPresent() ||
                 (accountType.equals(CUSTOMER) && !accnt.get().isCustomer()) ||
-                (accountType.equals(BUSINESS) && accnt.get().isCustomer())) {
+                (accountType.equals(RESTAURANT) && accnt.get().isCustomer())) {
             throw new InvalidAccountException("Account not found or invalid:" + account);
         }
         return accnt.get();
