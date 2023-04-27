@@ -2,14 +2,12 @@ package com.takeaway.pay.controller;
 
 import com.takeaway.pay.domain.Account;
 import com.takeaway.pay.domain.Transfer;
-import com.takeaway.pay.exception.DailyLimitExceededException;
-import com.takeaway.pay.exception.InsufficientFundsException;
-import com.takeaway.pay.exception.InvalidAccountException;
-import com.takeaway.pay.exception.InvalidAmountException;
 import com.takeaway.pay.service.AccountService;
 import com.takeaway.pay.service.TransferService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,8 +33,11 @@ public class TransferController {
     }
 
     @PostMapping(value = "/transfer/create")
-    public long doTranfer(@Valid @RequestBody Transfer transfer) throws InsufficientFundsException,
-            InvalidAmountException, InvalidAccountException, DailyLimitExceededException {
-        return transferService.doTranfer(transfer);
+    public ResponseEntity<?> doTranfer(@Valid @RequestBody Transfer transfer) {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(transferService.doTranfer(transfer));
+        } catch (Exception exception) {
+            return ResponseEntity.badRequest().body(exception.getMessage());
+        }
     }
 }

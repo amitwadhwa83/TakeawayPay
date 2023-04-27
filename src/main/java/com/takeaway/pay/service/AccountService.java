@@ -2,7 +2,6 @@ package com.takeaway.pay.service;
 
 import com.takeaway.pay.domain.Account;
 import com.takeaway.pay.exception.InsufficientFundsException;
-import com.takeaway.pay.exception.InvalidAccountException;
 import com.takeaway.pay.util.AccountType;
 
 import java.math.BigDecimal;
@@ -16,5 +15,5 @@ public interface AccountService {
 
     void doTransfer(Account fromAccount, Account toAccount, BigDecimal amount) throws InsufficientFundsException;
 
-    Account validateAndGetAccount(AccountType accountType, long account) throws InvalidAccountException;
+    Account validateAndGetAccount(AccountType accountType, long account);
 }

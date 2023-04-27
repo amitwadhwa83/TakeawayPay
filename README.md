@@ -2,6 +2,33 @@
 Swagger api : http://localhost:8080/swagger-ui/index.html
 H2 console : http://localhost:8080/h2-console
 
+## Build:
+```
+mvn clean package
+```
+
+## Run:
+- Run the app, default port 8080:
+```
+java -jar target/TakeawayPay-0.0.1-SNAPSHOT.jar
+```
+
+- Run the app, specify the port:
+```
+java -jar target/TakeawayPay-0.0.1-SNAPSHOT.jar -p 6666
+```
+
+- Run Test Cases:
+```
+mvn test
+```
+
+| HTTP METHOD | PATH              | USAGE                                  |
+| -----------|-------------------|----------------------------------------|
+| GET | /transfers/       | get all transfers                         | 
+| GET | /accounts/        | get all acounts information            | 
+| POST | /transfer/create/ | perform transaction between 2 accounts | 
+
 ## How to use
 
 With the Web server started and running, perform the following requests to consume the API:
@@ -11,9 +38,10 @@ With the Web server started and running, perform the following requests to consu
 **Example request:**
 
 - **GET** (/transfers)
-- **Accept:** application/json
-- **Content-Type:** application/json
-
+##### Request:
+```sh
+GET /transfers
+```
 **Example response:**
 
 ```json
@@ -33,9 +61,10 @@ With the Web server started and running, perform the following requests to consu
 **Example request:**
 
 - **GET** (/accounts/)
-- **Accept:** application/json
-- **Content-Type:** application/json
-
+##### Request:
+```sh
+GET /accounts
+```
 **Example response:**
 
 ```json
@@ -60,12 +89,13 @@ With the Web server started and running, perform the following requests to consu
 **Example request:**
 
 - **POST** (/transfer/create)
-- **Accept:** application/json
-- **Content-Type:** application/json
 
 **Example request:**
-
-```json
+##### Request:
+```sh
+POST /transfer/create
+```
+```sh
 {
   "sourceAccount": 1,
   "destAccount": 2,

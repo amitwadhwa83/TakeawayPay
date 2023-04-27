@@ -3,7 +3,6 @@ package com.takeaway.pay.service;
 import com.takeaway.pay.domain.Account;
 import com.takeaway.pay.exception.GenericException;
 import com.takeaway.pay.exception.InsufficientFundsException;
-import com.takeaway.pay.exception.InvalidAccountException;
 import com.takeaway.pay.repository.AccountRepository;
 import com.takeaway.pay.util.AccountType;
 import org.springframework.stereotype.Service;
@@ -99,12 +98,12 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Account validateAndGetAccount(AccountType accountType, long account) throws InvalidAccountException {
+    public Account validateAndGetAccount(AccountType accountType, long account) {
         Optional<Account> accnt = accountRepository.findById(account);
         if (!accnt.isPresent() ||
                 (accountType.equals(CUSTOMER) && !accnt.get().isCustomer()) ||
                 (accountType.equals(RESTAURANT) && accnt.get().isCustomer())) {
-            throw new InvalidAccountException("Account not found or invalid:" + account);
+            throw new IllegalArgumentException(String.format("Account:%s not found or invalid for type:%s", account, accountType));
         }
         return accnt.get();
     }
