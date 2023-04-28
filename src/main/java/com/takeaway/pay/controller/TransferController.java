@@ -35,9 +35,9 @@ public class TransferController {
     @PostMapping(value = "/transfer/create")
     public ResponseEntity<?> doTranfer(@Valid @RequestBody Transfer transfer) {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(transferService.doTranfer(transfer));
+            return ResponseEntity.status(HttpStatus.OK).body(String.format("Transfer id:%s", transferService.doTranfer(transfer)));
         } catch (Exception exception) {
-            return ResponseEntity.badRequest().body(exception.getMessage());
+            return ResponseEntity.badRequest().body(String.format("Transfer failed with reason:%s", exception.getMessage()));
         }
     }
 }
