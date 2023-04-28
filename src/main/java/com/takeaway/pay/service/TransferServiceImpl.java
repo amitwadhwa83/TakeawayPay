@@ -12,9 +12,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-import static com.takeaway.pay.business.TranferValidation.validateTransaction;
-import static com.takeaway.pay.util.AccountType.CUSTOMER;
-import static com.takeaway.pay.util.AccountType.RESTAURANT;
+import static com.takeaway.pay.business.TranferValidation.validateTransfer;
 
 @Service
 public class TransferServiceImpl implements TransferService {
@@ -38,15 +36,15 @@ public class TransferServiceImpl implements TransferService {
     @Transactional(rollbackFor = Exception.class)
     public long doTranfer(Transfer transfer)
             throws AccountNotExistsException, DailyLimitExceededException, IdenticalAccountsException, InsufficientFundsException,
-            InvalidAmountException {
-        BigDecimal transferAmount = transfer.getAmount();
-        List<Transfer> transfersForToday = transferRepository.findByDate(transfer.getSourceAccount(), LocalDate.now());
-        validateTransaction(transfer, transfersForToday);
+            InvalidAmountException, InvalidTransferException {
 
-        Account customerAccount = accountService.validateAndGetAccount(transfer.getSourceAccount(), CUSTOMER);
-        Account restaurantAccount = accountService.validateAndGetAccount(transfer.getDestAccount(), RESTAURANT);
-        return tranferMoney(customerAccount, restaurantAccount, transferAmount);
+        Account sourceAccount = accountService.findById(transfer.getSourceAccount());
+        Account destAccount = accountService.findById(transfer.getDestAccount());
+        List<Transfer> transfersForToday = transferRepository.findByDate(transfer.getSourceAccount(), LocalDate.now());
+        validateTransfer(sourceAccount, destAccount, transfer.getAmount(), transfersForToday);
+        return tranferMoney(sourceAccount, destAccount, transfer.getAmount());
     }
+
 
     public long tranferMoney(Account fromAccount, Account toAccount, BigDecimal transferAmount) throws InsufficientFundsException,
             AccountNotExistsException {

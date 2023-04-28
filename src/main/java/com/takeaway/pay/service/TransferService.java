@@ -9,5 +9,5 @@ public interface TransferService {
     List<Transfer> listTransfer();
 
     long doTranfer(Transfer transfer) throws AccountNotExistsException, DailyLimitExceededException,
-            IdenticalAccountsException, InsufficientFundsException, InvalidAmountException;
+            IdenticalAccountsException, InsufficientFundsException, InvalidAmountException, InvalidTransferException;
 }

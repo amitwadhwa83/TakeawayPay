@@ -57,6 +57,14 @@ public class Account {
         return customer;
     }
 
+    public boolean isNotCustomerAccount() {
+        return !customer;
+    }
+
+    public boolean isCustomerAccount() {
+        return customer;
+    }
+
     public void setCustomer(boolean customer) {
         this.customer = customer;
     }

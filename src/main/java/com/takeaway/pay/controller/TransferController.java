@@ -37,7 +37,7 @@ public class TransferController {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(String.format("Transfer id:%s", transferService.doTranfer(transfer)));
         } catch (Exception exception) {
-            return ResponseEntity.badRequest().body(String.format("Transfer failed with reason:%s", exception.getMessage()));
+            return ResponseEntity.badRequest().body(String.format("Transfer failed with reason :%s", exception.getMessage()));
         }
     }
 }

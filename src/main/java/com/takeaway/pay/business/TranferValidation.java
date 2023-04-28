@@ -1,9 +1,11 @@
 package com.takeaway.pay.business;
 
+import com.takeaway.pay.domain.Account;
 import com.takeaway.pay.domain.Transfer;
 import com.takeaway.pay.exception.DailyLimitExceededException;
 import com.takeaway.pay.exception.IdenticalAccountsException;
 import com.takeaway.pay.exception.InvalidAmountException;
+import com.takeaway.pay.exception.InvalidTransferException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -14,23 +16,31 @@ public enum TranferValidation {
 
     private static final BigDecimal DAILY_LIMIT_IN_EUR = new BigDecimal(10);
 
-    public static void validateTransaction(Transfer transfer, List<Transfer> transfersForToday) throws DailyLimitExceededException,
-            IdenticalAccountsException, InvalidAmountException {
-        long debitAccount = transfer.getSourceAccount();
-        long creditAccount = transfer.getDestAccount();
-        BigDecimal transferAmount = transfer.getAmount();
+    public static void validateTransfer(Account sourceAccount, Account destAccount, BigDecimal transferAmount,
+                                        List<Transfer> transfersForToday) throws DailyLimitExceededException,
+            IdenticalAccountsException, InvalidAmountException, InvalidTransferException {
+
+        long debitAccount = sourceAccount.getId();
+        long creditAccount = destAccount.getId();
+
         if (debitAccount == creditAccount) {
             throw new IdenticalAccountsException(debitAccount, creditAccount);
         }
         if (null == transferAmount || transferAmount.signum() <= 0) {
             throw new InvalidAmountException(transferAmount);
         }
-        validateDailyLimitNotBreachedForAccount(debitAccount, transferAmount, transfersForToday);
+        validateTransferDirection(sourceAccount, destAccount);
+        validateDailyLimit(debitAccount, transferAmount, transfersForToday);
     }
 
+    private static void validateTransferDirection(Account debitAccount, Account creditAccount) throws InvalidTransferException {
+        if (debitAccount.isNotCustomerAccount() || creditAccount.isCustomerAccount()) {
+            throw new InvalidTransferException();
+        }
+    }
 
-    private static void validateDailyLimitNotBreachedForAccount(long accountId, BigDecimal debitAmount,
-                                                                List<Transfer> transfersForToday) throws DailyLimitExceededException {
+    private static void validateDailyLimit(long accountId, BigDecimal debitAmount,
+                                           List<Transfer> transfersForToday) throws DailyLimitExceededException {
         if (debitAmount.compareTo(DAILY_LIMIT_IN_EUR) > 0) {
             throw new DailyLimitExceededException(DAILY_LIMIT_IN_EUR);
         }

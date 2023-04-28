@@ -4,16 +4,11 @@ import com.takeaway.pay.domain.Account;
 import com.takeaway.pay.exception.AccountNotExistsException;
 import com.takeaway.pay.exception.InsufficientFundsException;
 import com.takeaway.pay.repository.AccountRepository;
-import com.takeaway.pay.util.AccountType;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
-
-import static com.takeaway.pay.util.AccountType.CUSTOMER;
-import static com.takeaway.pay.util.AccountType.RESTAURANT;
 
 @Service
 public class AccountServiceImpl implements AccountService {
@@ -22,6 +17,11 @@ public class AccountServiceImpl implements AccountService {
 
     public AccountServiceImpl(AccountRepository accountRepository) {
         this.accountRepository = accountRepository;
+    }
+
+    @Override
+    public Account findById(long accountId) throws AccountNotExistsException {
+        return accountRepository.findById(accountId).orElseThrow(() -> new AccountNotExistsException(accountId));
     }
 
     @Override
@@ -85,16 +85,5 @@ public class AccountServiceImpl implements AccountService {
                 }
             }
         }
-    }
-
-    @Override
-    public Account validateAndGetAccount(long accountId, AccountType accountType) throws AccountNotExistsException {
-        Optional<Account> accnt = accountRepository.findById(accountId);
-        if (!accnt.isPresent() ||
-                (accountType.equals(CUSTOMER) && !accnt.get().isCustomer()) ||
-                (accountType.equals(RESTAURANT) && accnt.get().isCustomer())) {
-            throw new AccountNotExistsException(accountId, accountType);
-        }
-        return accnt.get();
     }
 }
