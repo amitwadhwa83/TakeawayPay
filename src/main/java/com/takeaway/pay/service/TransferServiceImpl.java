@@ -46,7 +46,7 @@ public class TransferServiceImpl implements TransferService {
     }
 
 
-    public long tranferMoney(Account fromAccount, Account toAccount, BigDecimal transferAmount) throws InsufficientFundsException,
+    private long tranferMoney(Account fromAccount, Account toAccount, BigDecimal transferAmount) throws InsufficientFundsException,
             AccountNotExistsException {
         accountService.doTransfer(fromAccount, toAccount, transferAmount);
         return transferRepository.save(new Transfer(fromAccount.getId(), toAccount.getId(), transferAmount))
