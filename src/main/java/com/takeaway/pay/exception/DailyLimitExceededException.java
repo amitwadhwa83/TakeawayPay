@@ -4,9 +4,10 @@ import java.math.BigDecimal;
 
 public class DailyLimitExceededException extends GenericException {
 
-    private static final String MESSAGE = "Daily spending limit is exhausted/will be exhausted for account:%s, available amount:%s EUR";
+    private static final String MESSAGE = "Daily spending limit is exhausted/will be exhausted for account:%s, " +
+            "available amount:%s EUR";
 
-    public DailyLimitExceededException(BigDecimal dailyLimitInEur) {
+    public DailyLimitExceededException(String dailyLimitInEur) {
         super(String.format("Transfer amount is greater than daily limit of:%s EUR", dailyLimitInEur));
     }
 

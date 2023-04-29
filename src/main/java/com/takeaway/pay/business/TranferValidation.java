@@ -42,7 +42,7 @@ public enum TranferValidation {
     private static void validateDailyLimit(long accountId, BigDecimal debitAmount,
                                            List<Transfer> transfersForToday) throws DailyLimitExceededException {
         if (debitAmount.compareTo(DAILY_LIMIT_IN_EUR) > 0) {
-            throw new DailyLimitExceededException(DAILY_LIMIT_IN_EUR);
+            throw new DailyLimitExceededException(DAILY_LIMIT_IN_EUR.toString());
         }
         if (!transfersForToday.isEmpty()) {
             BigDecimal totalTransfersForToday = transfersForToday.stream()

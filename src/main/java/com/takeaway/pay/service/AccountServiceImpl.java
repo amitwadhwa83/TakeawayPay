@@ -29,26 +29,19 @@ public class AccountServiceImpl implements AccountService {
         return accountRepository.findAll();
     }
 
-    private void creditAccount(long accountId, BigDecimal transferAmount) throws AccountNotExistsException {
-        accountRepository.findById(accountId).map(acct -> {
-            acct.setBalance(acct.getBalance().add(transferAmount));
-            acct.setLastUpdate(LocalDateTime.now());
-            accountRepository.save(acct);
-            return acct;
-        }).orElseThrow(() -> new AccountNotExistsException(accountId));
+    private void creditAccount(Account account, BigDecimal transferAmount) {
+        account.setBalance(account.getBalance().add(transferAmount));
+        account.setLastUpdate(LocalDateTime.now());
+        accountRepository.save(account);
     }
 
-    private void debitAccount(long accountId, BigDecimal transferAmount) throws AccountNotExistsException {
-        accountRepository.findById(accountId).map(acct -> {
-            if (acct.getBalance().compareTo(transferAmount) >= 0) {
-                acct.setBalance(acct.getBalance().subtract(transferAmount));
-                acct.setLastUpdate(LocalDateTime.now());
-                accountRepository.save(acct);
-            } else {
-                throw new InsufficientFundsException(accountId);
-            }
-            return acct;
-        }).orElseThrow(() -> new AccountNotExistsException(accountId));
+    private void debitAccount(Account account, BigDecimal transferAmount) throws InsufficientFundsException {
+        if (account.getBalance().compareTo(transferAmount) <= 0) {
+            throw new InsufficientFundsException(account.getId());
+        }
+        account.setBalance(account.getBalance().subtract(transferAmount));
+        account.setLastUpdate(LocalDateTime.now());
+        accountRepository.save(account);
     }
 
     private static final Object lock = new Object();
@@ -58,8 +51,8 @@ public class AccountServiceImpl implements AccountService {
             AccountNotExistsException {
         class Helper {
             public void transfer() throws InsufficientFundsException, AccountNotExistsException {
-                debitAccount(fromAccount.getId(), transferAmount);
-                creditAccount(toAccount.getId(), transferAmount);
+                debitAccount(fromAccount, transferAmount);
+                creditAccount(toAccount, transferAmount);
             }
         }
         int fromHash = System.identityHashCode(fromAccount);
