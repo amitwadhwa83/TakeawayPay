@@ -20,9 +20,7 @@ import static com.takeaway.pay.business.TranferValidation.validateTransfer;
 public class TransferServiceImpl implements TransferService {
 
     private final TransferRepository transferRepository;
-    @Autowired
     private final AccountService accountService;
-
 
     public TransferServiceImpl(TransferRepository transferRepository, AccountService accountService) {
         this.transferRepository = transferRepository;

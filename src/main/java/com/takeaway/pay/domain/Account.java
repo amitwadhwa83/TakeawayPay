@@ -1,28 +1,37 @@
 package com.takeaway.pay.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "account")
+//@Entity
+//@Table(name = "account")
 public class Account {
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    @Column(name = "id", nullable = false)
+    // @Id
+    // @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    // @Column(name = "id", nullable = false)
     private long id;
 
-    @Column(name = "balance", nullable = false)
+    // @Column(name = "balance", nullable = false)
     private BigDecimal balance;
 
-    @Column(name = "last_update", nullable = false)
+    // @Column(name = "last_update", nullable = false)
     private LocalDateTime lastUpdate;
 
-    @Column(name = "is_customer", nullable = false)
+    // @Column(name = "is_customer", nullable = false)
     private boolean customer;
 
-    protected Account() {
+    //  public Account() {
+    // }
+
+    public Account(long id, BigDecimal balance, boolean isCustomer) {
+        this.id = id;
+        this.balance = balance;
+        this.customer = isCustomer;
+        lastUpdate = LocalDateTime.now();
     }
 
     public Account(boolean isCustomer) {
@@ -57,10 +66,12 @@ public class Account {
         return customer;
     }
 
+    @JsonIgnore
     public boolean isNotCustomerAccount() {
         return !customer;
     }
 
+    @JsonIgnore
     public boolean isCustomerAccount() {
         return customer;
     }
