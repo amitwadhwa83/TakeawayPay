@@ -8,29 +8,29 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 
-@Entity
-@Table(name = "transfer")
+//@Entity
+//@Table(name = "transfer")
 public class Transfer {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    @Column(name = "id", nullable = false)
+    //@Id
+    // @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    // @Column(name = "id", nullable = false)
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private long id;
 
-    @Column(name = "source_account", nullable = false)
+    // @Column(name = "source_account", nullable = false)
     @NotNull
     private long sourceAccount;
 
-    @Column(name = "dest_account", nullable = false)
+    //@Column(name = "dest_account", nullable = false)
     @NotNull
     private long destAccount;
 
-    @Column(name = "amount", nullable = false)
+   // @Column(name = "amount", nullable = false)
     @NotNull
     private BigDecimal amount;
 
-    @Column(name = "last_update")
+    //@Column(name = "last_update")
     private LocalDateTime lastUpdate;
 
     public Transfer() {

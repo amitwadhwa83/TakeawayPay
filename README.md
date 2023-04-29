@@ -1,6 +1,9 @@
 # Takeaway Pay API
 Swagger api : http://localhost:8080/swagger-ui/index.html
-Database : An H2 in-memory database. H2 console : http://localhost:8080/h2-console
+
+## Notes:
+I did not use any database implementations, but made a simple storage based on ConcurrentHashMap.
+
 ## Build:
 ```
 mvn clean package
