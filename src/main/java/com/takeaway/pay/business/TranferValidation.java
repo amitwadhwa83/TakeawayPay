@@ -26,17 +26,13 @@ public enum TranferValidation {
         if (debitAccount == creditAccount) {
             throw new IdenticalAccountsException(debitAccount, creditAccount);
         }
+        if (sourceAccount.isNotCustomerAccount() || destAccount.isCustomerAccount()) {
+            throw new InvalidTransferException();
+        }
         if (null == transferAmount || transferAmount.signum() <= 0) {
             throw new InvalidAmountException(transferAmount);
         }
-        validateTransferDirection(sourceAccount, destAccount);
         validateDailyLimit(debitAccount, transferAmount, transfersForToday);
-    }
-
-    private static void validateTransferDirection(Account debitAccount, Account creditAccount) throws InvalidTransferException {
-        if (debitAccount.isNotCustomerAccount() || creditAccount.isCustomerAccount()) {
-            throw new InvalidTransferException();
-        }
     }
 
     private static void validateDailyLimit(long accountId, BigDecimal debitAmount,
