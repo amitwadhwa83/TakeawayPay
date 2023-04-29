@@ -1,7 +1,6 @@
 # Takeaway Pay API
 Swagger api : http://localhost:8080/swagger-ui/index.html
-H2 console : http://localhost:8080/h2-console
-
+Database : An H2 in-memory database. H2 console : http://localhost:8080/h2-console
 ## Build:
 ```
 mvn clean package
@@ -23,11 +22,11 @@ java -jar target/TakeawayPay-0.0.1-SNAPSHOT.jar -p 6666
 mvn test
 ```
 
-| HTTP METHOD | PATH              | USAGE                                  |
-| -----------|-------------------|----------------------------------------|
-| GET | /transfers/       | get all transfers                         | 
-| GET | /accounts/        | get all acounts information            | 
-| POST | /transfer/create/ | perform transaction between 2 accounts | 
+| HTTP METHOD | PATH              | USAGE                               |
+| -----------|-------------------|-------------------------------------|
+| GET | /transfers/       | get all transfers                   | 
+| GET | /accounts/        | get all acounts information         | 
+| POST | /transfer/create/ | perform transfer between 2 accounts | 
 
 ## How to use
 
