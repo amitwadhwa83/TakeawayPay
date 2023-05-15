@@ -1,8 +1,10 @@
 # Takeaway Pay API
-Swagger api : http://localhost:8080/swagger-ui/index.html
 
 ## Notes:
-I did not use any database implementations, but made a simple storage based on ConcurrentHashMap.
+I did not use any database implementations, but made a simple storage based on ConcurrentHashMap. 
+I have not included any currency into my design for simplicity.
+There can be more integration tests that can be included to test the application I focused on the important ones.
+Exception handling could have been handled better with a framework approach.
 
 ## Build:
 ```
@@ -25,88 +27,18 @@ java -jar target/TakeawayPay-0.0.1-SNAPSHOT.jar -p 6666
 mvn test
 ```
 
-| HTTP METHOD | PATH              | USAGE                               |
-| -----------|-------------------|-------------------------------------|
-| GET | /transfers/       | get all transfers                   | 
-| GET | /accounts/        | get all acounts information         | 
-| POST | /transfer/create/ | perform transfer between 2 accounts | 
+| HTTP METHOD | PATH                     | USAGE                                            | URL                                                                                                                                                     |
+|-------------|--------------------------|--------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| PUT         | /pay/createCustomer/     | Create a new customer with zero allowance        | curl -X PUT http://localhost:8080/pay/createCustomer?id=78                                                                                              | 
+| PUT         | /pay/createRestaurant/   | Create a restaurant with zero account balance    | curl -X PUT http://localhost:8080/pay/createRestaurant?id=3                                                                                             | 
+| GET         | /pay/getCustomerBalance  | Get cutomer allowance balance                    | curl -X GET http://localhost:8080/pay/getCustomerBalance?id=78                                                                                          | 
+| GET        | /pay/getRestaurantBalance | Get restaurant account balance                   | curl -X GET http://localhost:8080/pay/getRestaurantBalance?id=3                                                                                         | 
+| POST        | /pay/doTopup             | Topup customer allowance                         | curl -X POST http://localhost:8080/pay/doTopup -H "Content-Type: application/json" -d '{"customerId": 78, "topUpAmount": 20.0}'                         | 
+| POST        | /pay/doTransfer          | Do tranfer from customer allowance to restaurant | curl -X POST http://localhost:8080/pay/doTransfer -H "Content-Type: application/json" -d '{"customerId": 78, "restaurantId": 3, "transferAmount": 8.0}' | 
 
-## How to use
+Note : for windows based cmd runs POST request should be like this
 
-With the Web server started and running, perform the following requests to consume the API:
-
-### List all transfers
-
-**Example request:**
-
-- **GET** (/transfers)
-##### Request:
-```sh
-GET /transfers
-```
-**Example response:**
-
-```json
-[
-  {
-    "id": 1,
-    "sourceAccount": 1,
-    "destAccount": 2,
-    "amount": 4,
-    "lastUpdate": "2023-04-23T01:31:14.672742"
-  }
-]
-```
-
-### List all accounts
-
-**Example request:**
-
-- **GET** (/accounts/)
-##### Request:
-```sh
-GET /accounts
-```
-**Example response:**
-
-```json
-[
-  {
-    "id": 1,
-    "balance": 36,
-    "lastUpdate": "2023-04-23T01:31:12.006365",
-    "customer": true
-  },
-  {
-    "id": 2,
-    "balance": 14,
-    "lastUpdate": "2023-04-23T01:31:12.087122",
-    "customer": false
-  }
-]
-```
-
-### Take money from the customer's account and put it in the restaurant's account.
-
-**Example request:**
-
-- **POST** (/transfer/create)
-
-**Example request:**
-##### Request:
-```sh
-POST /transfer/create
-```
-```sh
-{
-  "sourceAccount": 1,
-  "destAccount": 2,
-  "amount": 4,
-  "lastUpdate": "2023-04-24T18:54:35.487Z"
-}
-```
-**Example response:**
-
-```string
- 3
-```
+| HTTP METHOD | PATH            | URL                                                                                                                                                |
+|-------------|-----------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| POST        | /pay/doTopup    | curl -X POST http://localhost:8080/pay/doTopup -H "Content-Type: application/json" -d "{"""customerId""":78,"""topUpAmount""":20.0}"               | 
+| POST        | /pay/doTransfer | curl -X POST http://localhost:8080/pay/doTransfer -H "Content-Type: application/json" -d "{"""customerId""": 78,"""restaurantId""":3,"""transferAmount""":8.0}" | 
